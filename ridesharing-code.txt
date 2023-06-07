@@ -1,0 +1,22 @@
+WITH cte1 AS (
+SELECT customer_id, MIN(created_at) AS registration_date
+FROM rideshare
+GROUP BY 1
+HAVING MIN(created_at) < '2021-02-01'
+ORDER BY registration_date
+),
+temp2 AS (
+SELECT customer_id, created_at AS trip_time
+FROM rideshare
+WHERE created_at BETWEEN '2023-05-01' AND '2023-05-31'
+AND customer_id IN (
+SELECT customer_id
+FROM cte1
+)
+ORDER BY customer_id
+)
+SELECT count(*) AS num_trips, c.first_name, c.last_name, c.area, c.email
+FROM temp2 AS t
+LEFT JOIN chalao_customers AS c ON c.cid = t.customer_id
+GROUP BY t.customer_id, 2, 3, 4, 5
+ORDER BY num_trips DESC;
